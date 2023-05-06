@@ -313,12 +313,16 @@ func (db *DB) loadIndexFromDataFile() error {
 				Fid:    fileId,
 				Offset: offset,
 			}
+			var ok bool
 			if logRecord.Type == data.LogRecordDeleted {
-				db.index.Delete(logRecord.Key)
+				ok = db.index.Delete(logRecord.Key)
 			} else {
-				db.index.Put(logRecord.Key, logRecordPos)
+				ok = db.index.Put(logRecord.Key, logRecordPos)
 			}
 
+			if !ok {
+				return ErrIndexUpdateFailed
+			}
 			//递增offset，下一次从新的位置开始读取
 			offset += size
 		}
