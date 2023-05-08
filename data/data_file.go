@@ -24,7 +24,7 @@ type DataFile struct {
 
 // OpenDataFile 打开新的数据文件
 func OpenDataFile(dirPath string, fileId uint32) (*DataFile, error) {
-	fileName := filepath.Join(dirPath + fmt.Sprintf("%09d", fileId) + DataFileNameSuffix)
+	fileName := filepath.Join(dirPath, fmt.Sprintf("%09d", fileId)+DataFileNameSuffix)
 	//初始化IOManager，就是生成对应文件名的.data文件
 	ioManager, err := fio.NewFileIOManager(fileName)
 	if err != nil {
