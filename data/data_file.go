@@ -17,16 +17,16 @@ const DataFileNameSuffix = ".data"
 
 // DataFile 数据文件
 type DataFile struct {
-	FileId    uint32         //文件id
-	WriteOff  int64          //文件写到了哪个位置
-	IoManager fioo.IOManager //io 读写管理
+	FileId    uint32        //文件id
+	WriteOff  int64         //文件写到了哪个位置
+	IoManager fio.IOManager //io 读写管理
 }
 
 // OpenDataFile 打开新的数据文件
 func OpenDataFile(dirPath string, fileId uint32) (*DataFile, error) {
 	fileName := filepath.Join(dirPath, fmt.Sprintf("%09d", fileId)+DataFileNameSuffix)
 	//初始化IOManager，就是生成对应文件名的.data文件
-	ioManager, err := fioo.NewFileIOManager(fileName)
+	ioManager, err := fio.NewFileIOManager(fileName)
 	if err != nil {
 		return nil, err
 	}
