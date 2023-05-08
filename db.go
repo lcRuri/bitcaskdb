@@ -176,7 +176,7 @@ func (db *DB) appendLogRecord(logRecord *data.LogRecord) (*data.LogRecordPos, er
 
 	//获取到了active文件，进行读写操作
 	//对logRecord进行编码
-	encRecord, size := data.EncodeLogRecord()
+	encRecord, size := data.EncodeLogRecord(logRecord)
 
 	//如果写入的数据已经到达了活跃文件的阈值，则关闭活跃文件，并打开新的文件
 	if db.activeFile.WriteOff+size > db.options.DataFileSize {
