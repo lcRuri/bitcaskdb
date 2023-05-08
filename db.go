@@ -132,6 +132,11 @@ func (db *DB) Get(key []byte) ([]byte, error) {
 		return nil, ErrKeyNotFound
 	}
 
+	return db.getValueByPosition(logRecordPos)
+}
+
+// 根据索引位置信息获取对应的value
+func (db *DB) getValueByPosition(logRecordPos *data.LogRecordPos) ([]byte, error) {
 	//根据文件id找到数据文件
 	var dataFile *data.DataFile
 	//当前活跃文件的文件id是否等于key对应的文件id
@@ -159,6 +164,7 @@ func (db *DB) Get(key []byte) ([]byte, error) {
 	}
 
 	return logRecord.Value, nil
+
 }
 
 // 追加写入到活跃文件当中
