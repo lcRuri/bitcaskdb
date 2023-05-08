@@ -1,4 +1,4 @@
-package fioo
+package fio
 
 import (
 	"github.com/stretchr/testify/assert"

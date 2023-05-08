@@ -1,4 +1,4 @@
-package fioo
+package fio
 
 const DataFilePerm = 0644
 
