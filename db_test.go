@@ -2,6 +2,7 @@ package bitcask_go
 
 import (
 	"bitcask-go/utils"
+	"bytes"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -208,4 +209,70 @@ func TestDB_Delete(t *testing.T) {
 	val2, err := db2.Get(utils.GetTestKey(22))
 	assert.Nil(t, err)
 	assert.Equal(t, val1, val2)
+}
+
+func TestDB_ListKeys(t *testing.T) {
+	opts := DefaultOptions
+	dir, _ := os.MkdirTemp("", "bitcask-go-list-keys")
+	opts.DirPath = dir
+	opts.DataFileSize = 64 * 1024 * 1024
+	db, err := Open(opts)
+	defer destroyDB(db)
+	assert.Nil(t, err)
+	assert.NotNil(t, db)
+
+	keys := db.ListKeys()
+	assert.Equal(t, 0, len(keys))
+
+	err = db.Put(utils.GetTestKey(10), utils.RandomValue(11))
+	assert.Nil(t, err)
+
+	keys1 := db.ListKeys()
+	for _, k := range keys1 {
+		t.Log(string(k))
+	}
+
+	err = db.Put(utils.GetTestKey(22), utils.RandomValue(11))
+	assert.Nil(t, err)
+	err = db.Put(utils.GetTestKey(33), utils.RandomValue(11))
+	assert.Nil(t, err)
+	err = db.Put(utils.GetTestKey(44), utils.RandomValue(11))
+	assert.Nil(t, err)
+
+	keys2 := db.ListKeys()
+	for _, k := range keys2 {
+		t.Log(string(k))
+	}
+
+}
+
+func TestDB_Fold(t *testing.T) {
+	opts := DefaultOptions
+	dir, _ := os.MkdirTemp("", "bitcask-go-list-fold")
+	opts.DirPath = dir
+	opts.DataFileSize = 64 * 1024 * 1024
+	db, err := Open(opts)
+	defer destroyDB(db)
+	assert.Nil(t, err)
+	assert.NotNil(t, db)
+
+	err = db.Put(utils.GetTestKey(11), utils.RandomValue(11))
+	assert.Nil(t, err)
+	err = db.Put(utils.GetTestKey(22), utils.RandomValue(11))
+	assert.Nil(t, err)
+	err = db.Put(utils.GetTestKey(33), utils.RandomValue(11))
+	assert.Nil(t, err)
+	err = db.Put(utils.GetTestKey(44), utils.RandomValue(11))
+	assert.Nil(t, err)
+
+	err = db.Fold(func(key []byte, value []byte) bool {
+		t.Log(string(key))
+		t.Log(string(value))
+		if bytes.Compare(key, utils.GetTestKey(22)) == 0 {
+			return false
+		}
+		return true
+	})
+
+	assert.Nil(t, err)
 }
