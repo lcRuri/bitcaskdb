@@ -135,6 +135,38 @@ func (db *DB) Get(key []byte) ([]byte, error) {
 	return db.getValueByPosition(logRecordPos)
 }
 
+// ListKeys 获取数据库中所有的key
+func (db *DB) ListKeys() [][]byte {
+	iterator := db.index.Iterator(false)
+	keys := make([][]byte, db.index.Size())
+	var idx int
+	for iterator.Rewind(); iterator.Valid(); iterator.Next() {
+		keys[idx] = iterator.Key()
+		idx++
+	}
+	return keys
+}
+
+// Fold 获取所有的数据 并执行用户指定的操作 函数返回false时 终止遍历
+func (db *DB) Fold(fn func(key []byte, value []byte) bool) error {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	iterator := db.index.Iterator(false)
+	for iterator.Rewind(); iterator.Valid(); iterator.Next() {
+		value, err := db.getValueByPosition(iterator.Value())
+		if err != nil {
+			return err
+		}
+
+		if !fn(iterator.Key(), value) {
+			break
+		}
+	}
+
+	return nil
+}
+
 // 根据索引位置信息获取对应的value
 func (db *DB) getValueByPosition(logRecordPos *data.LogRecordPos) ([]byte, error) {
 	//根据文件id找到数据文件
