@@ -17,6 +17,9 @@ type Indexer interface {
 	// Delete 根据key删除对应的索引位置信息
 	Delete(key []byte) bool
 
+	// Size 索引中的数树数量
+	Size() int
+
 	// Iterator 索引迭代器
 	Iterator(reserve bool) Iterator
 }
