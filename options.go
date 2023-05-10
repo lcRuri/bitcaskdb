@@ -20,6 +20,15 @@ type IteratorOptions struct {
 	Reserve bool
 }
 
+// WriteBatchOptions 批量写配置
+type WriteBatchOptions struct {
+	//一个批次当中最大的数据量
+	MaxBatchNum int
+
+	//提交事务时是否持久化
+	SyncWrites bool
+}
+
 type IndexerType = int8
 
 const (
