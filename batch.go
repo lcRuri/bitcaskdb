@@ -133,7 +133,7 @@ func (wb *WriteBatch) Commit() error {
 		if record.Type == data.LogRecordNormal {
 			wb.db.index.Put(record.Key, pos)
 		}
-		//???
+		//type是删除的数据
 		if record.Type == data.LogRecordDeleted {
 			wb.db.index.Delete(record.Key)
 		}
