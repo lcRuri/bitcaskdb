@@ -24,12 +24,13 @@ func destroyDB(db *DB) {
 
 func TestOpen(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go")
-	opts.DirPath = dir
 	db, err := Open(opts)
 	defer destroyDB(db)
 	assert.Nil(t, err)
 	assert.NotNil(t, db)
+	err = db.Put(utils.GetTestKey(1), utils.RandomValue(24))
+	assert.Nil(t, err)
+	t.Log(opts.DirPath)
 }
 
 func TestDB_Put(t *testing.T) {
