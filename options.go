@@ -1,7 +1,5 @@
 package bitcask_go
 
-import "os"
-
 type Options struct {
 	DirPath string //数据库目录文件
 
@@ -37,7 +35,7 @@ const (
 )
 
 var DefaultOptions = Options{
-	DirPath:      os.TempDir(),
+	DirPath:      " tmp/",
 	DataFileSize: 256 * 1024 * 1024,
 	SyncWrites:   false,
 	IndexType:    Btree,
@@ -46,4 +44,9 @@ var DefaultOptions = Options{
 var DefaultIteratorOptions = IteratorOptions{
 	Prefix:  nil,
 	Reserve: false,
+}
+
+var DefaultWriteBatchOptions = WriteBatchOptions{
+	MaxBatchNum: 10000,
+	SyncWrites:  true,
 }
