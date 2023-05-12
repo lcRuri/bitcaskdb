@@ -14,6 +14,8 @@ var (
 )
 
 const DataFileNameSuffix = ".data"
+const HintFileName = "hint-index"
+const MergeFinishedFileName = "merge-finished"
 
 // DataFile 数据文件
 type DataFile struct {
@@ -24,7 +26,26 @@ type DataFile struct {
 
 // OpenDataFile 打开新的数据文件
 func OpenDataFile(dirPath string, fileId uint32) (*DataFile, error) {
-	fileName := filepath.Join(dirPath, fmt.Sprintf("%09d", fileId)+DataFileNameSuffix)
+	fileName := GetDataFileName(dirPath, fileId)
+	return newDataFile(fileName, fileId)
+}
+
+// OpenHintFile 打开Hint文件索引
+func OpenHintFile(dirPath string) (*DataFile, error) {
+	fileName := filepath.Join(dirPath, HintFileName)
+	return newDataFile(fileName, 0)
+}
+
+func OpenMergeFinishedFile(dirPath string) (*DataFile, error) {
+	fileName := filepath.Join(dirPath, MergeFinishedFileName)
+	return newDataFile(fileName, 0)
+}
+
+func GetDataFileName(dirPath string, fileId uint32) string {
+	return filepath.Join(dirPath, fmt.Sprintf("%09d", fileId)+DataFileNameSuffix)
+}
+
+func newDataFile(fileName string, fileId uint32) (*DataFile, error) {
 	//初始化IOManager，就是生成对应文件名的.data文件
 	ioManager, err := fio.NewFileIOManager(fileName)
 	if err != nil {
@@ -100,6 +121,18 @@ func (df *DataFile) Write(buf []byte) error {
 	//更新writeOff的字段
 	df.WriteOff += int64(n)
 	return nil
+}
+
+// WriteHintRecord 写入索引信息到Hint文件中
+func (df *DataFile) WriteHintRecord(key []byte, pos *LogRecordPos) error {
+	record := &LogRecord{
+		Key:   key,
+		Value: EncodeLogRecordPos(pos),
+	}
+
+	encRecord, _ := EncodeLogRecord(record)
+
+	return df.Write(encRecord)
 }
 
 func (df *DataFile) Sync() error {
