@@ -20,6 +20,11 @@ type WriteBatch struct {
 
 // NewWriteBatch 初始化
 func (db *DB) NewWriteBatch(opts WriteBatchOptions) *WriteBatch {
+	//如果索引是b+树模式并且存储事务序列号的文件不存在并且不是第一次创建数据库文件目录，禁用功能
+	if db.options.IndexType == BPlusTree && !db.seqNoFileExists && !db.isInitial {
+		panic("cannot use write batch, seq no file not exists")
+	}
+	//否则启用
 	return &WriteBatch{
 		options:       opts,
 		mu:            new(sync.Mutex),
