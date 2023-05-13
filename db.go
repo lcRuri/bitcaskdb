@@ -4,6 +4,8 @@ import (
 	"bitcask-go/data"
 	"bitcask-go/index"
 	"errors"
+	"fmt"
+	"github.com/gofrs/flock"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,7 +15,10 @@ import (
 	"sync"
 )
 
-const seqNoKey = "seq.no"
+const (
+	seqNoKey     = "seq.no"
+	fileLockName = "flock"
+)
 
 // DB bitcask 存储引擎实例
 type DB struct {
@@ -27,6 +32,7 @@ type DB struct {
 	isMerging       bool                      //是否正在进行merge
 	seqNoFileExists bool                      //存储事务序列号的文件是否存在
 	isInitial       bool                      //是否第一次初始化次目录
+	fileLock        *flock.Flock              //文件锁对象保证多进场之间的互斥
 }
 
 // Open 打开bitcask存储引擎实例
@@ -45,6 +51,17 @@ func Open(options Options) (*DB, error) {
 		}
 	}
 
+	//判断当前数据目录是否在使用 文件锁
+	fileLock := flock.New(filepath.Join(options.DirPath, fileLockName))
+	//尝试获取锁
+	hold, err := fileLock.TryLock()
+	if err != nil {
+		return nil, err
+	}
+	if !hold {
+		return nil, ErrDatabaseIsUsing
+	}
+
 	//可能目录存在但是里面没有内容
 	entries, err := os.ReadDir(options.DirPath)
 	if err != nil {
@@ -61,6 +78,7 @@ func Open(options Options) (*DB, error) {
 		olderFile: make(map[uint32]*data.DataFile),
 		index:     index.NewIndexer(options.IndexType, options.DirPath, options.SyncWrites),
 		isInitial: isInitial,
+		fileLock:  fileLock,
 	}
 
 	//加载merge数据目录
@@ -107,6 +125,11 @@ func Open(options Options) (*DB, error) {
 }
 
 func (db *DB) Close() error {
+	defer func() {
+		if err := db.fileLock.Unlock(); err != nil {
+			panic(fmt.Sprintf("failed to unlock the directory,%v", err))
+		}
+	}()
 	if db.activeFile == nil {
 		return nil
 	}
