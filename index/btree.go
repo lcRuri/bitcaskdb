@@ -70,6 +70,10 @@ func (bt *BTree) Iterator(reserve bool) Iterator {
 	return newBTreeIterator(bt.tree, reserve)
 }
 
+func (bt *BTree) Close() error {
+	return nil
+}
+
 // BTree的索引迭代器
 type btreeIterator struct {
 	currIndex int     //当前遍历的位置

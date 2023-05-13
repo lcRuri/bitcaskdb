@@ -64,6 +64,10 @@ func (art *AdaptiveRadix) Iterator(reserve bool) Iterator {
 	return newARTIterator(art.tree, reserve)
 }
 
+func (art *AdaptiveRadix) Close() error {
+	return nil
+}
+
 // Art 索引迭代器
 type artIterator struct {
 	currIndex int     //当前遍历的位置
