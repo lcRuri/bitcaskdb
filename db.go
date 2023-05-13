@@ -566,7 +566,7 @@ func (db *DB) loadSeqNo() error {
 		return nil
 	}
 
-	seqNoFile, err := data.OpenSeqNoFile(filename)
+	seqNoFile, err := data.OpenSeqNoFile(db.options.DirPath)
 	if err != nil {
 		return err
 	}

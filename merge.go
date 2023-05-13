@@ -265,8 +265,8 @@ func (db *DB) getNonMergeFileId(dirPath string) (uint32, error) {
 func (db *DB) loadIndexFromHintFile() error {
 	//查看hint索引文件是否存在
 	hintFileName := filepath.Join(db.options.DirPath, data.HintFileName)
-	if _, err := os.Stat(hintFileName); err != nil {
-		return err
+	if _, err := os.Stat(hintFileName); os.IsNotExist(err) {
+		return nil
 	}
 
 	//打开对应的hint索引文件
