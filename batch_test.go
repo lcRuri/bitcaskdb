@@ -3,14 +3,11 @@ package bitcask_go
 import (
 	"bitcask-go/utils"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 )
 
 func TestDB_WriteBatch(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go-batch-1")
-	opts.DirPath = dir
 	db, err := Open(opts)
 	defer destroyDB(db)
 	assert.Nil(t, err)
@@ -85,6 +82,7 @@ func TestDB_WriteBatch2(t *testing.T) {
 	assert.Nil(t, err)
 
 	db2, err := Open(opts)
+	defer db2.Close()
 	assert.Nil(t, err)
 
 	val, err := db2.Get(utils.GetTestKey(1))
@@ -100,13 +98,15 @@ func TestDB_WriteBatch2(t *testing.T) {
 func TestDB_WriteBatch3(t *testing.T) {
 	opts := DefaultOptions
 	db, err := Open(opts)
-	//defer destroyDB(db)
+	defer destroyDB(db)
 	assert.Nil(t, err)
 	assert.NotNil(t, db)
 
 	keys := db.ListKeys()
 	t.Log(len(keys))
 
+	err = db.Close()
+	assert.Nil(t, err)
 	//wbops := DefaultWriteBatchOptions
 	//wbops.MaxBatchNum = 1000000
 	//wb := db.NewWriteBatch(wbops)

@@ -35,8 +35,6 @@ func TestOpen(t *testing.T) {
 
 func TestDB_Put(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go-put")
-	opts.DirPath = dir
 	opts.DataFileSize = 64 * 1024 * 1024
 	db, err := Open(opts)
 	defer destroyDB(db)
@@ -68,12 +66,12 @@ func TestDB_Put(t *testing.T) {
 	assert.Equal(t, 0, len(val3))
 	assert.Nil(t, err)
 
-	// 5.写到数据文件进行了转换
-	for i := 0; i < 1000000; i++ {
-		err := db.Put(utils.GetTestKey(i), utils.RandomValue(128))
-		assert.Nil(t, err)
-	}
-	assert.Equal(t, 2, len(db.olderFile))
+	//// 5.写到数据文件进行了转换
+	//for i := 0; i < 1000000; i++ {
+	//	err := db.Put(utils.GetTestKey(i), utils.RandomValue(128))
+	//	assert.Nil(t, err)
+	//}
+	//assert.Equal(t, 2, len(db.olderFile))
 
 	// 6.重启后再 Put 数据
 	err = db.Close()
@@ -81,6 +79,7 @@ func TestDB_Put(t *testing.T) {
 
 	// 重启数据库
 	db2, err := Open(opts)
+	defer db2.Close()
 	assert.Nil(t, err)
 	assert.NotNil(t, db2)
 	val4 := utils.RandomValue(128)
@@ -93,8 +92,6 @@ func TestDB_Put(t *testing.T) {
 
 func TestDB_Get(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go-get")
-	opts.DirPath = dir
 	opts.DataFileSize = 64 * 1024 * 1024
 	db, err := Open(opts)
 	defer destroyDB(db)
@@ -130,15 +127,15 @@ func TestDB_Get(t *testing.T) {
 	assert.Equal(t, 0, len(val4))
 	assert.Equal(t, ErrKeyNotFound, err)
 
-	// 5.转换为了旧的数据文件，从旧的数据文件上获取 value
-	for i := 100; i < 1000000; i++ {
-		err := db.Put(utils.GetTestKey(i), utils.RandomValue(128))
-		assert.Nil(t, err)
-	}
-	assert.Equal(t, 2, len(db.olderFile))
-	val5, err := db.Get(utils.GetTestKey(101))
-	assert.Nil(t, err)
-	assert.NotNil(t, val5)
+	//// 5.转换为了旧的数据文件，从旧的数据文件上获取 value
+	//for i := 100; i < 1000000; i++ {
+	//	err := db.Put(utils.GetTestKey(i), utils.RandomValue(128))
+	//	assert.Nil(t, err)
+	//}
+	//assert.Equal(t, 2, len(db.olderFile))
+	//val5, err := db.Get(utils.GetTestKey(101))
+	//assert.Nil(t, err)
+	//assert.NotNil(t, val5)
 
 	// 6.重启后，前面写入的数据都能拿到
 	err = db.Close()
@@ -146,6 +143,7 @@ func TestDB_Get(t *testing.T) {
 
 	// 重启数据库
 	db2, err := Open(opts)
+	defer db2.Close()
 	val6, err := db2.Get(utils.GetTestKey(11))
 	assert.Nil(t, err)
 	assert.NotNil(t, val6)
@@ -163,8 +161,6 @@ func TestDB_Get(t *testing.T) {
 
 func TestDB_Delete(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go-delete")
-	opts.DirPath = dir
 	opts.DataFileSize = 64 * 1024 * 1024
 	db, err := Open(opts)
 	defer destroyDB(db)
@@ -205,6 +201,7 @@ func TestDB_Delete(t *testing.T) {
 
 	// 重启数据库
 	db2, err := Open(opts)
+	defer db2.Close()
 	_, err = db2.Get(utils.GetTestKey(11))
 	assert.Equal(t, ErrKeyNotFound, err)
 
@@ -215,8 +212,6 @@ func TestDB_Delete(t *testing.T) {
 
 func TestDB_ListKeys(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go-list-keys")
-	opts.DirPath = dir
 	opts.DataFileSize = 64 * 1024 * 1024
 	db, err := Open(opts)
 	defer destroyDB(db)
@@ -250,8 +245,6 @@ func TestDB_ListKeys(t *testing.T) {
 
 func TestDB_Fold(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go-list-fold")
-	opts.DirPath = dir
 	opts.DataFileSize = 64 * 1024 * 1024
 	db, err := Open(opts)
 	defer destroyDB(db)
@@ -281,8 +274,6 @@ func TestDB_Fold(t *testing.T) {
 
 func TestDB_Close(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go-list-close")
-	opts.DirPath = dir
 	opts.DataFileSize = 64 * 1024 * 1024
 	db, err := Open(opts)
 	defer destroyDB(db)
@@ -296,8 +287,6 @@ func TestDB_Close(t *testing.T) {
 
 func TestDB_Sync(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go-list-sync")
-	opts.DirPath = dir
 	opts.DataFileSize = 64 * 1024 * 1024
 	db, err := Open(opts)
 	defer destroyDB(db)

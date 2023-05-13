@@ -25,8 +25,6 @@ func TestDB_NewIterator(t *testing.T) {
 
 func TestDB_Iterator_One_Value(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("./tmp", "bitcask-go")
-	opts.DirPath = dir
 	db, err := Open(opts)
 	defer destroyDB(db)
 	assert.Nil(t, err)
@@ -48,8 +46,6 @@ func TestDB_Iterator_One_Value(t *testing.T) {
 
 func TestDB_Iterator_Multi_Value(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("./tmp", "bitcask-go")
-	opts.DirPath = dir
 	db, err := Open(opts)
 	defer destroyDB(db)
 	assert.Nil(t, err)
