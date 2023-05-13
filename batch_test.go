@@ -54,10 +54,8 @@ func TestDB_WriteBatch(t *testing.T) {
 
 func TestDB_WriteBatch2(t *testing.T) {
 	opts := DefaultOptions
-	dir, _ := os.MkdirTemp("", "bitcask-go-batch-1")
-	opts.DirPath = dir
 	db, err := Open(opts)
-	defer destroyDB(db)
+	//defer destroyDB(db)
 	assert.Nil(t, err)
 	assert.NotNil(t, db)
 
@@ -80,6 +78,10 @@ func TestDB_WriteBatch2(t *testing.T) {
 	err = wb.Put(utils.GetTestKey(2), utils.RandomValue(10))
 	assert.Nil(t, err)
 	err = wb.Commit()
+	assert.Nil(t, err)
+
+	// 重启
+	err = db.Close()
 	assert.Nil(t, err)
 
 	db2, err := Open(opts)
