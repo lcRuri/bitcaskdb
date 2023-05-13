@@ -30,12 +30,16 @@ type WriteBatchOptions struct {
 type IndexerType = int8
 
 const (
+	// Btree B树索引
 	Btree IndexerType = iota + 1
+	// ART 自适应基数树索引
 	ART
+	// BPlusTree B+树索引
+	BPlusTree
 )
 
 var DefaultOptions = Options{
-	DirPath:      " tmp/",
+	DirPath:      "tmp/",
 	DataFileSize: 256 * 1024 * 1024,
 	SyncWrites:   false,
 	IndexType:    Btree,
