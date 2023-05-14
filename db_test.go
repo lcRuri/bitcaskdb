@@ -367,3 +367,27 @@ func TestDB_Stat(t *testing.T) {
 	assert.NotNil(t, stat)
 
 }
+
+func TestDB_BackUp(t *testing.T) {
+	opts := DefaultOptions
+	opts.DataFileSize = 64 * 1024 * 1024
+	db, err := Open(opts)
+	defer destroyDB(db)
+	assert.Nil(t, err)
+	assert.NotNil(t, db)
+
+	for i := 1; i < 100; i++ {
+		err = db.Put(utils.GetTestKey(i), utils.RandomValue(10))
+		assert.Nil(t, err)
+	}
+
+	dir := "/Users/yefeixiang/coding/kv-projects/bitcask-go/backup"
+	err = db.BackUp(dir)
+	assert.Nil(t, err)
+
+	opts1 := DefaultOptions
+	opts1.DirPath = dir
+	db1, err := Open(opts1)
+	assert.Nil(t, err)
+	assert.NotNil(t, db1)
+}
