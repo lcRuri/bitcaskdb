@@ -21,12 +21,15 @@ func NewART() *AdaptiveRadix {
 		lock: new(sync.RWMutex),
 	}
 }
-func (art *AdaptiveRadix) Put(key []byte, pos *data.LogRecordPos) bool {
+func (art *AdaptiveRadix) Put(key []byte, pos *data.LogRecordPos) *data.LogRecordPos {
 	art.lock.RLock()
-	defer art.lock.RUnlock()
-	art.tree.Insert(key, pos)
+	oldValue, _ := art.tree.Insert(key, pos)
+	art.lock.RUnlock()
 
-	return true
+	if oldValue == nil {
+		return nil
+	}
+	return oldValue.(*data.LogRecordPos)
 }
 
 func (art *AdaptiveRadix) Get(key []byte) *data.LogRecordPos {
@@ -40,12 +43,15 @@ func (art *AdaptiveRadix) Get(key []byte) *data.LogRecordPos {
 	return value.(*data.LogRecordPos)
 }
 
-func (art *AdaptiveRadix) Delete(key []byte) bool {
+func (art *AdaptiveRadix) Delete(key []byte) (*data.LogRecordPos, bool) {
 	art.lock.RLock()
-	defer art.lock.RUnlock()
+	oldValue, deleted := art.tree.Delete(key)
+	art.lock.RUnlock()
+	if oldValue == nil {
+		return nil, false
+	}
 
-	_, deleted := art.tree.Delete(key)
-	return deleted
+	return oldValue.(*data.LogRecordPos), deleted
 }
 
 func (art *AdaptiveRadix) Size() int {

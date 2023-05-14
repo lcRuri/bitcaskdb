@@ -8,14 +8,14 @@ import (
 
 // Indexer 抽象索引接口 后续如果想要接入其他的数据结构 则之间实现这个接口
 type Indexer interface {
-	// Put 向索引中存储key对应的数据位置信息
-	Put(key []byte, pos *data.LogRecordPos) bool
+	// Put 向索引中存储key对应的数据位置信息 返回之前这个位置的值
+	Put(key []byte, pos *data.LogRecordPos) *data.LogRecordPos
 
 	// Get 根据key取出对应的索引位置信息
 	Get(key []byte) *data.LogRecordPos
 
-	// Delete 根据key删除对应的索引位置信息
-	Delete(key []byte) bool
+	// Delete 根据key删除对应的索引位置信息 返回之前这个位置的值
+	Delete(key []byte) (*data.LogRecordPos, bool)
 
 	// Size 索引中的数树数量
 	Size() int
