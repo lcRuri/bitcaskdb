@@ -2,6 +2,7 @@ package bitcask_go
 
 import (
 	"bitcask-go/data"
+	"bitcask-go/fio"
 	"bitcask-go/index"
 	"errors"
 	"fmt"
@@ -103,6 +104,13 @@ func Open(options Options) (*DB, error) {
 		//从数据文件中加载索引
 		if err := db.loadIndexFromDataFile(); err != nil {
 			return nil, err
+		}
+
+		//重置 IO 类型为标准 IO 类型
+		if db.options.MMapAtStartUp {
+			if err := db.resetIoType(); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -420,7 +428,7 @@ func (db *DB) setActiveDataFile() error {
 
 	//打开新的数据文件
 	//将获取的dataFile给数据库实例的activeFile
-	dataFile, err := data.OpenDataFile(db.options.DirPath, initalFileld)
+	dataFile, err := data.OpenDataFile(db.options.DirPath, initalFileld, fio.StandardIO)
 	if err != nil {
 		return err
 	}
@@ -457,7 +465,11 @@ func (db *DB) loadDataFile() error {
 	db.fileIds = fileIds
 	//遍历每个文件id，打开对应的数据文件
 	for i, fid := range fileIds {
-		dataFile, err := data.OpenDataFile(db.options.DirPath, uint32(fid))
+		ioType := fio.StandardIO
+		if db.options.MMapAtStartUp {
+			ioType = fio.MemoryMap
+		}
+		dataFile, err := data.OpenDataFile(db.options.DirPath, uint32(fid), ioType)
 		if err != nil {
 			return err
 		}
@@ -618,4 +630,23 @@ func (db *DB) loadSeqNo() error {
 
 	//seqNoFile会一直追加写，所有加载后将这个文件删掉
 	return os.Remove(filename)
+}
+
+// 将数据文件的IO类型设置为标准文件IO类型
+func (db *DB) resetIoType() error {
+	if db.activeFile == nil {
+		return nil
+	}
+
+	if err := db.activeFile.SetIOManager(db.options.DirPath, fio.StandardIO); err != nil {
+		return err
+	}
+
+	for _, dataFile := range db.olderFile {
+		if err := dataFile.SetIOManager(db.options.DirPath, fio.StandardIO); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

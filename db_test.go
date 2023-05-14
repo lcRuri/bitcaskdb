@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+	"time"
 )
 
 // 测试完成之后销毁 DB 数据目录
@@ -312,4 +313,28 @@ func TestDB_FileLock(t *testing.T) {
 	db2, err := Open(opts)
 	t.Log(db2)
 	t.Log(err)
+}
+
+func TestDB_Open2(t *testing.T) {
+	opts := DefaultOptions
+	//写入1.16G数据
+	//now := time.Now()
+	//for j := 0; j < 1000; j++ {
+	//	for i := 0; i < 20000; i++ {
+	//		err = db.Put(utils.GetTestKey(i), utils.RandomValue(10))
+	//		assert.Nil(t, err)
+	//	}
+	//}
+	//
+	//t.Log("cost: ", time.Since(now))
+
+	now := time.Now()
+	db, err := Open(opts)
+	t.Log("open time ", time.Since(now))
+	assert.Nil(t, err)
+	assert.NotNil(t, db)
+
+	//使用MMap：  7.115577333s
+	//不使用MMap：40.743409792s
+
 }
