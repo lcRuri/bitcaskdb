@@ -33,6 +33,7 @@ type DB struct {
 	seqNoFileExists bool                      //存储事务序列号的文件是否存在
 	isInitial       bool                      //是否第一次初始化次目录
 	fileLock        *flock.Flock              //文件锁对象保证多进场之间的互斥
+	bytesWrites     uint                      //累计写了多少字节
 }
 
 // Open 打开bitcask存储引擎实例
@@ -379,10 +380,21 @@ func (db *DB) appendLogRecord(logRecord *data.LogRecord) (*data.LogRecordPos, er
 		return nil, err
 	}
 
+	//对累计数量进行递增
+	db.bytesWrites += uint(size)
 	//根据配置决定是否持久化
+	var needSync = db.options.SyncWrites
+	if !needSync && db.options.BytesPerSync > 0 && db.bytesWrites >= db.options.BytesPerSync {
+		needSync = true
+	}
+
 	if db.options.SyncWrites == true {
 		if err := db.activeFile.Sync(); err != nil {
 			return nil, err
+		}
+		//清空累计值
+		if db.bytesWrites > 0 {
+			db.bytesWrites = 0
 		}
 	}
 
