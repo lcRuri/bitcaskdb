@@ -89,3 +89,34 @@ func TestRedisDataStructure_HDel(t *testing.T) {
 	del2, err := rds.HDel(utils.GetTestKey(1), []byte("field1"))
 	t.Log(del2, err)
 }
+
+func TestRedisDataStructure_SAdd(t *testing.T) {
+	opts := bitcask.DefaultOptions
+	rds, err := NewRedisDataStructure(opts)
+	assert.Nil(t, err)
+
+	ok, err := rds.SAdd(utils.GetTestKey(1), []byte("a"))
+	t.Log(ok, err)
+	ok1, err := rds.SAdd(utils.GetTestKey(1), []byte("a"))
+	t.Log(ok1, err)
+	ok2, err := rds.SAdd(utils.GetTestKey(1), []byte("c"))
+	t.Log(ok2, err)
+
+	ok, err = rds.SIsMember(utils.GetTestKey(2), []byte("a"))
+	t.Log(ok, err)
+	ok, err = rds.SIsMember(utils.GetTestKey(1), []byte("a"))
+	t.Log(ok, err)
+	ok, err = rds.SIsMember(utils.GetTestKey(1), []byte("c"))
+	t.Log(ok, err)
+	ok, err = rds.SIsMember(utils.GetTestKey(1), []byte("aaaa"))
+	t.Log(ok, err)
+
+	ok, err = rds.SRem(utils.GetTestKey(2), []byte("axs"))
+	t.Log(ok, err)
+	ok, err = rds.SRem(utils.GetTestKey(1), []byte("axs"))
+	t.Log(ok, err)
+	ok, err = rds.SRem(utils.GetTestKey(1), []byte("a"))
+	t.Log(ok, err)
+	ok, err = rds.SIsMember(utils.GetTestKey(1), []byte("a"))
+	t.Log(ok, err)
+}
