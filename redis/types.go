@@ -101,7 +101,7 @@ func (rds *RedisDataStructure) HSet(key, field, value []byte) (bool, error) {
 
 	//先查找数据是否存在
 	var exist = true
-	if _, err := rds.db.Get(key); err == bitcask_go.ErrKeyNotFound {
+	if _, err := rds.db.Get(enckey); err == bitcask_go.ErrKeyNotFound {
 		exist = false
 	}
 
