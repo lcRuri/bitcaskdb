@@ -14,12 +14,12 @@ const (
 
 // 元数据
 type metadata struct {
-	dataType byte   //数据类型
-	expire   int64  //过期时间
-	version  int64  //版本号
-	size     uint32 //数据量
-	head     uint64 //List专用数据结构
-	tail     uint64 //List专用数据结构
+	dataType byte   // 数据类型
+	expire   int64  // 过期时间
+	version  int64  // 版本号
+	size     uint32 // 数据量
+	head     uint64 // List 数据结构专用
+	tail     uint64 // List 数据结构专用
 }
 
 func (md *metadata) encode() []byte {
@@ -123,6 +123,30 @@ func (sk *setInternalKey) encode() []byte {
 
 	//member size
 	binary.LittleEndian.PutUint32(buf[index:], uint32(len(sk.member)))
+
+	return buf
+}
+
+type listInternalKey struct {
+	key     []byte
+	version int64
+	index   uint64
+}
+
+func (lk *listInternalKey) encode() []byte {
+	buf := make([]byte, len(lk.key)+8+8)
+
+	// key
+	var index = 0
+	copy(buf[index:index+len(lk.key)], lk.key)
+	index += len(lk.key)
+
+	// version
+	binary.LittleEndian.PutUint64(buf[index:index+8], uint64(lk.version))
+	index += 8
+
+	// index
+	binary.LittleEndian.PutUint64(buf[index:], lk.index)
 
 	return buf
 }
