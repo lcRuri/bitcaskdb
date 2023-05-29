@@ -120,3 +120,27 @@ func TestRedisDataStructure_SAdd(t *testing.T) {
 	ok, err = rds.SIsMember(utils.GetTestKey(1), []byte("a"))
 	t.Log(ok, err)
 }
+
+func TestRedisDataStructure_List(t *testing.T) {
+	opts := bitcask.DefaultOptions
+	rds, err := NewRedisDataStructure(opts)
+	assert.Nil(t, err)
+
+	res, err := rds.LPush(utils.GetTestKey(1), []byte("a"))
+	t.Log(res, err)
+	res, err = rds.LPush(utils.GetTestKey(1), []byte("b"))
+	t.Log(res, err)
+
+	pop1, err := rds.RPop(utils.GetTestKey(1))
+	t.Log(string(pop1), err)
+
+	res, err = rds.LPush(utils.GetTestKey(1), []byte("c"))
+	t.Log(res, err)
+
+	pop, err := rds.LPop(utils.GetTestKey(1))
+	t.Log(string(pop), err)
+	pop, err = rds.LPop(utils.GetTestKey(1))
+	t.Log(string(pop), err)
+	pop, err = rds.LPop(utils.GetTestKey(1))
+	t.Log(string(pop), err)
+}
