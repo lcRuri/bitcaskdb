@@ -40,7 +40,7 @@ func (md *metadata) encode() []byte {
 		index += binary.PutUvarint(buf[index:], md.tail)
 	}
 
-	return buf[index:]
+	return buf[:index]
 }
 
 func decodeMetadata(buf []byte) *metadata {
