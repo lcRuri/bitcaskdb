@@ -144,3 +144,32 @@ func TestRedisDataStructure_List(t *testing.T) {
 	pop, err = rds.LPop(utils.GetTestKey(1))
 	t.Log(string(pop), err)
 }
+
+func TestRedisDataStructure_ZSet(t *testing.T) {
+	opts := bitcask.DefaultOptions
+	rds, err := NewRedisDataStructure(opts)
+	assert.Nil(t, err)
+
+	ok, err := rds.ZAdd(utils.GetTestKey(1), 111, []byte("val-1"))
+	//t.Log(ok, err)
+	assert.Nil(t, err)
+	assert.True(t, ok)
+	ok, err = rds.ZAdd(utils.GetTestKey(1), 222, []byte("val-1"))
+	//t.Log(ok, err)
+	assert.Nil(t, err)
+	assert.False(t, ok)
+	ok, err = rds.ZAdd(utils.GetTestKey(1), 333, []byte("val-2"))
+	//t.Log(ok, err)
+	assert.Nil(t, err)
+	assert.True(t, ok)
+
+	score, err := rds.ZScore(utils.GetTestKey(1), []byte("val-1"))
+	t.Log(score, err)
+	assert.Equal(t, score, float64(222))
+	assert.Nil(t, err)
+	score, err = rds.ZScore(utils.GetTestKey(1), []byte("val-2"))
+	t.Log(score, err)
+	assert.Equal(t, score, float64(333))
+	assert.Nil(t, err)
+
+}
