@@ -2,6 +2,7 @@ package redis
 
 import (
 	bitcask_go "bitcask-go"
+	"bitcask-go/utils"
 	"encoding/binary"
 	"errors"
 	"time"
@@ -364,6 +365,93 @@ func (rds *RedisDataStructure) popInner(key []byte, isLeft bool) ([]byte, error)
 	}
 
 	return element, nil
+}
+
+// ======================= ZSet 数据结构 =======================
+
+func (rds *RedisDataStructure) ZAdd(key []byte, score float64, member []byte) (bool, error) {
+	meta, err := rds.findMetadata(key, ZSet)
+	if err != nil {
+		return false, err
+	}
+
+	//构造数据部分的key
+	zk := &ZSetInternalKey{
+		key:     key,
+		version: meta.version,
+		member:  member,
+		score:   score,
+	}
+
+	var exist = true
+	//查看是否已经存在
+	value, err := rds.db.Get(zk.encodeWithMember())
+	if err != nil && err != bitcask_go.ErrKeyNotFound {
+		return false, err
+	}
+
+	if err == bitcask_go.ErrKeyNotFound {
+		exist = false
+	}
+
+	if exist {
+		if score == utils.BytesToFloat64(value) {
+			return false, nil
+		}
+	}
+
+	//更新元数据和数据部分
+	wb := rds.db.NewWriteBatch(bitcask_go.DefaultWriteBatchOptions)
+	if !exist {
+		meta.size++
+		_ = wb.Put(key, meta.encode())
+	}
+
+	if exist {
+		oldKey := &ZSetInternalKey{
+			key:     key,
+			version: meta.version,
+			member:  member,
+			score:   utils.BytesToFloat64(value),
+		}
+
+		_ = wb.Delete(oldKey.encodeWithScore())
+	}
+
+	//更新数据部分
+	_ = wb.Put(zk.encodeWithMember(), utils.Float64ToBytes(score))
+	_ = wb.Put(zk.encodeWithScore(), nil)
+
+	if err = wb.Commit(); err != nil {
+		return false, err
+	}
+
+	return !exist, nil
+}
+
+func (rds *RedisDataStructure) ZScore(key, member []byte) (float64, error) {
+	meta, err := rds.findMetadata(key, ZSet)
+	if err != nil {
+		return -1, err
+	}
+
+	if meta.size == 0 {
+		return -1, nil
+	}
+
+	//构造数据部分的key
+	zk := &ZSetInternalKey{
+		key:     key,
+		version: meta.version,
+		member:  member,
+	}
+
+	value, err := rds.db.Get(zk.encodeWithMember())
+	if err != nil {
+		return -1, err
+	}
+
+	return utils.BytesToFloat64(value), nil
 }
 
 func (rds *RedisDataStructure) findMetadata(key []byte, dataType RedisDataType) (*metadata, error) {
