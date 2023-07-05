@@ -1,0 +1,10 @@
+standalone:
+  addr: "127.0.0.1:6380"
+engine:
+  dirPath: "/Users/yefeixiang/coding/lcRuridb/cmd/store"
+  dataFileSize: 268435456
+  syncWrites: false
+  bytesPerSync: 0
+  indexType: "btree"
+  mMapAtStartUp: true
+  dataFileMergeRatio: 0.5
