@@ -2,13 +2,16 @@ package main
 
 import (
 	bitcask_go "bitcask-go"
+	"fmt"
+
 	bitcask_redis "bitcask-go/redis"
 	"github.com/tidwall/redcon"
 	"log"
 	"sync"
 )
 
-const addr = "127.0.0.1:6380"
+const port = "6380"
+const addr = "127.0.0.1:" + port
 
 type BitcaskServer struct {
 	dbs    map[int]*bitcask_redis.RedisDataStructure
@@ -32,9 +35,13 @@ func main() {
 	//初始化一个redis服务
 	bitcaskServer.server = redcon.NewServer(addr, execClientCommand, bitcaskServer.accept, bitcaskServer.close)
 	bitcaskServer.Listen()
+
 }
 
 func (svr *BitcaskServer) accept(conn redcon.Conn) bool {
+	fmt.Println("1")
+	fmt.Println(conn)
+	fmt.Println()
 	cli := new(BitcaskClient)
 	svr.mu.Lock()
 	defer svr.mu.Unlock()
@@ -51,7 +58,8 @@ func (svr *BitcaskServer) close(conn redcon.Conn, err error) {
 		_ = db.Close()
 	}
 
-	_ = svr.server.Close()
+	//fmt.Println("3")
+	//_ = svr.server.Close()
 }
 
 func (svr *BitcaskServer) Listen() {
